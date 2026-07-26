@@ -7,10 +7,12 @@ Last updated: 2026-07-26
 - [x] Repo initialized, directory structure created
 - [x] Plan documented in docs/PLAN.md
 - [x] .gitignore, README in place
+- [x] Design tokens defined — `design/tokens.ts`
+- [x] Design ADR written — `docs/adr/001-design-system.md`
 
 ## What's next
 
-- [ ] Chunk 0.2: Design tokens + /design/preview route
+- [ ] Chunk 0.3: Test harness (Vitest + Playwright)
 - [ ] Chunk 0.3: Test harness (Vitest + Playwright)
 - [ ] Chunk 0.4: CI on GitHub Actions
 - [ ] Chunk 0.5: check-env.js on postinstall
