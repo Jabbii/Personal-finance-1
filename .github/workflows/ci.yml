@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Unit tests ────────────────────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+  # ── Secret safety check ───────────────────────────────────────────────────
+  # Catches cases where a server-only secret accidentally gets a NEXT_PUBLIC_
+  # prefix, which would expose it in the browser bundle.
+  secret-check:
+    name: Secret Safety Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for secrets with NEXT_PUBLIC_ prefix
+        run: |
+          if grep -rE "NEXT_PUBLIC_.*(SERVICE_ROLE|SECRET|PRIVATE|PASSWORD)" \
+            --include="*.ts" \
+            --include="*.tsx" \
+            --include="*.js" \
+            --include="*.jsx" \
+            --include="*.env.example" \
+            .; then
+            echo ""
+            echo "ERROR: A server-only secret has a NEXT_PUBLIC_ prefix."
+            echo "This would expose it in the browser. Rename the variable."
+            exit 1
+          fi
+          echo "No leaked secrets found."

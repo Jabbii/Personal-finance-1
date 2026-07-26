@@ -12,9 +12,11 @@ Last updated: 2026-07-26
 
 - [x] Test harness — Vitest + Playwright configured, 10 unit tests passing
 
+- [x] CI — GitHub Actions runs unit tests + secret safety check on every push/PR
+
 ## What's next
 
-- [ ] Chunk 0.4: CI on GitHub Actions
+- [ ] Chunk 0.5: check-env.js on postinstall
 - [ ] Chunk 0.3: Test harness (Vitest + Playwright)
 - [ ] Chunk 0.4: CI on GitHub Actions
 - [ ] Chunk 0.5: check-env.js on postinstall
