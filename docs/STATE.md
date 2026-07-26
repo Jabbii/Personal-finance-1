@@ -14,9 +14,12 @@ Last updated: 2026-07-26
 
 - [x] CI — GitHub Actions runs unit tests + secret safety check on every push/PR
 
+- [x] check-env.js — runs on postinstall, checks Node, .env.local, required vars, secret safety, OneDrive path
+
 ## What's next
 
-- [ ] Chunk 0.5: check-env.js on postinstall
+- [ ] Chunk 0.6: Prior art research (switch to Opus for this one)
+- [ ] Chunk 0.7: Doc templates finalised
 - [ ] Chunk 0.3: Test harness (Vitest + Playwright)
 - [ ] Chunk 0.4: CI on GitHub Actions
 - [ ] Chunk 0.5: check-env.js on postinstall

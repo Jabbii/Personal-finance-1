@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test":       "vitest run",
-    "test:watch": "vitest",
-    "test:e2e":   "playwright test",
-    "eval":       "vitest run fixtures/"
+    "postinstall": "node scripts/check-env.js",
+    "test":        "vitest run",
+    "test:watch":  "vitest",
+    "test:e2e":    "playwright test",
+    "eval":        "vitest run fixtures/"
   },
   "devDependencies": {
     "typescript":        "^5.7.0",
