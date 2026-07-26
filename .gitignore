@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# env files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# Next.js
+.next/
+out/
+
+# build
+dist/
+
+# logs
+logs/
+*.jsonl
+
+# local sync outputs
+finance-sync/
+
+# financial data exports — never commit personal data
+*.xlsx
+*.xls
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# test results
+coverage/
+playwright-report/
+test-results/

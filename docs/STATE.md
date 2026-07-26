@@ -1,0 +1,32 @@
+# State of the System
+
+Last updated: 2026-07-26
+
+## What exists and works
+
+- [x] Repo initialized, directory structure created
+- [x] Plan documented in docs/PLAN.md
+- [x] .gitignore, README in place
+
+## What's next
+
+- [ ] Chunk 0.2: Design tokens + /design/preview route
+- [ ] Chunk 0.3: Test harness (Vitest + Playwright)
+- [ ] Chunk 0.4: CI on GitHub Actions
+- [ ] Chunk 0.5: check-env.js on postinstall
+- [ ] Chunk 0.6: Prior art research (Opus)
+- [ ] Chunk 0.7: Doc templates finalized
+
+## Accounts needed before Phase 1
+
+- [x] GitHub — github.com/Jabbii/Personal-finance-1
+- [x] Supabase — account exists, project TBD
+- [x] Vercel — account exists
+- [ ] OpenRouter — needs setup at openrouter.ai (needed before Chunk 1.4)
+- [ ] Cloudflare R2 — needed in Phase 4 only
+
+## Known gaps
+
+- Money Manager CSV not yet exported (needed for Phase 2.3)
+- Golden slip set not yet collected (needed for Chunk 1.5) — gather 5 slips per bank
+- Push alerts deferred to Phase 4
