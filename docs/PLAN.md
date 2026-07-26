@@ -1,7 +1,16 @@
-# Personal Finance Web App — Architecture Plan (v4)
+# Personal Finance Web App — Architecture Plan (v5)
+
+> **v5 changes (2026-07-26, from Chunk 0.6 research)** — Next.js 15 → 16.2 with `"use cache"`, dropped Qwen3-VL (Gemini cheaper), dropped AI categorization for MVP (CSV bootstrap + manual review), added OneDrive `attrib +P` pin step, HEIC library = `heic-convert`, bank count 3 → 5, golden set 15 → 25 slips. See `docs/prior-art.md` for rationale.
 
 ## Context
-Personal-use finance tracker for one user in Thailand. Inputs: OneDrive bank slips (JPEG/PNG/PDF/HEIC), LINE OA notification screenshots, and historical Money Manager (Realbyte) CSV export. Three banks: KBank, SCB, Bangkok Bank. Pain point: too many daily transactions across too many apps to track manually.
+Personal-use finance tracker for one user in Thailand. Inputs: OneDrive bank slips (JPEG/PNG/PDF/HEIC), LINE OA notification screenshots, and historical Money Manager (Realbyte) CSV export. Pain point: too many daily transactions across too many apps to track manually.
+
+**Five banks, seven apps:**
+- **KBank** — `K PLUS`, `MAKE by KBank` (sub-accounts)
+- **SCB** — `SCB EASY`
+- **Bangkok Bank** — `Bualuang mBanking`
+- **Krungthai** — `Krungthai NEXT`, `PaoTang` (sub-accounts)
+- **Dime!** — standalone bank in the UI (even though technically SCB-backed)
 
 Processing is on-demand, triggered when the laptop is opened. The app must load instantly on mobile, break loudly on failure, and stay used weekly.
 
@@ -109,7 +118,7 @@ Every rule below is stated as **WHAT** we do, **WHY** it matters to you, and **I
 |---|---|---|
 | Unit | Normalizers (date, amount, merchant), Zod schemas, utility fns | On save, in CI |
 | Integration | OpenRouter wrapper with mocked responses, sync script phases | In CI |
-| Golden set | 5 real slips per bank → expected JSON | On every prompt change |
+| Golden set | 5 real slips × 5 banks = 25 slips → expected JSON | On every prompt change |
 | E2E (headless browser) | Upload flow, dashboard render, review flow | Nightly + pre-merge |
 | RLS test | Anon key attempts write → must be blocked | On schema change |
 | Performance | Dashboard first paint <500ms with 5000 tx | Pre-merge |
@@ -138,7 +147,7 @@ Every rule below is stated as **WHAT** we do, **WHY** it matters to you, and **I
     sync.js                # main ingestion
     re-extract.js          # version-bump re-runner
     check-env.js           # runs on postinstall
-  /fixtures                # golden set: /kbank, /scb, /bbl, /line
+  /fixtures                # golden set: /kbank, /scb, /bbl, /krungthai, /dime, /line
   /migrations              # Supabase SQL, numbered
   /config
     lifecycle.json         # retention rules
@@ -188,11 +197,13 @@ Every rule below is stated as **WHAT** we do, **WHY** it matters to you, and **I
 **Chunk 0.6 output:** `docs/prior-art.md` documenting what patterns we're borrowing, what we're rejecting, and why. No fork chosen because none support Thai bank OCR — but data model + import patterns will be reused.
 
 **Also research in Phase 0:**
-- Latest Next.js 15 patterns (App Router idioms shift often)
-- Latest Supabase RLS best practices (recipes for single-user apps)
-- Latest OpenRouter model list + prices (this changes monthly)
-- Windows OneDrive Files-On-Demand behavior on current Windows 11
-- HEIC decoder options in Node (libraries fail on macOS-produced HEIC)
+- Latest Next.js 15 patterns (App Router idioms shift often) — **done, upgraded to 16.2**
+- Latest Supabase RLS best practices (recipes for single-user apps) — **done**
+- Latest OpenRouter model list + prices (this changes monthly) — **done, Qwen dropped**
+- Windows OneDrive Files-On-Demand behavior on current Windows 11 — **done, `attrib +P` pattern chosen**
+- HEIC decoder options in Node (libraries fail on macOS-produced HEIC) — **done, `heic-convert` chosen**
+
+**Full write-up:** `docs/prior-art.md`.
 
 ---
 
@@ -267,7 +278,7 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Frontend | Next.js 15 (App Router, RSC-first) | Server components remove client waterfalls |
+| Frontend | **Next.js 16.2** (App Router, RSC-first, `"use cache"` + PPR) | Server components remove client waterfalls; new Cache Components give explicit compiler-managed caching. |
 | DB access | `postgres.js` | ~10× smaller than Supabase JS client |
 | Database | Supabase Postgres | Free tier, hosted, backups |
 | Storage (hot) | Supabase Storage | Slips <6 months |
@@ -277,7 +288,10 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 | OCR gateway | OpenRouter | One API, model swap without code change |
 | Primary OCR | Gemini 2.5 Flash Lite | $0.10 / $0.40 per M tokens |
 | Fallback OCR | Gemini 2.5 Flash | On low-confidence retry |
-| Analysis | Claude Opus 4.7 via OpenRouter | On-demand only |
+| Categorization | ~~Qwen3-VL~~ **CSV bootstrap + manual review queue** | Qwen3-VL turned out more expensive than Gemini; manual first-time tagging is fine at ~150 merchants. |
+| Analysis | Claude Opus 4.7 via OpenRouter | On-demand only, invoked manually |
+| HEIC decoder | `heic-convert` (npm, pure JS) | No native binary, works on Windows out of the box |
+| OneDrive pinning | `attrib +P` via `child_process` | Forces Files-On-Demand placeholders to download before OCR read |
 | Sync runtime | Node.js 20+ | Runs on laptop |
 | Alerts | Pushover or Telegram bot | Push to phone |
 | Hosting | Vercel + Supabase | Free tier |
@@ -392,7 +406,7 @@ Each chunk = one Sonnet session, one commit, one PR, one test suite, one plain-l
 | -1.3 OneDrive structure | User | Share directory listing of `Bank Slips/` folder |
 | -1.4 Laptop specs | Opus | RAM, disk free, Node version, PowerShell version, Windows build |
 | -1.5 Existing scripts/tools | User | Any personal scripts/spreadsheets we should keep in sync? |
-| -1.6 Golden slip set | User | Send 5 real slips per bank + write correct extraction in notes |
+| -1.6 Golden slip set | User | Send 5 real slips per bank (KBank, SCB, BBL, Krungthai, Dime! = 25 total) + write correct extraction in notes |
 | -1.7 Design preference | User | Share 2–3 apps whose UI you'd want to feel like |
 
 **No Phase 0 work starts until -1 is complete.**
@@ -423,10 +437,10 @@ Each chunk = one Sonnet session, one commit, one PR, one test suite, one plain-l
 
 | Chunk | Depends on | Acceptance |
 |---|---|---|
-| 2.1 File readability + HEIC/PDF | 1.3 | Sync script scans, converts HEIC, splits PDF, skips 0-byte. Unit tested. |
-| 2.2 OCR call + normalizers + save | 1.4, 1.5, 2.1 | 1 slip end-to-end → transaction row. Golden set >95%. E2E test. |
+| 2.1 File readability + HEIC/PDF + OneDrive pin | 1.3 | Sync script scans per-bank OneDrive paths from `.env.local`, runs `attrib +P` and waits for OneDrive to fully download each placeholder, converts HEIC via `heic-convert`, splits PDF, skips 0-byte. Unit tested. |
+| 2.2 OCR call + normalizers + save | 1.4, 1.5, 2.1 | 1 slip end-to-end → transaction row. Golden set >95%. Internal-transfer rule (sender=recipient=user → direction=`transfer`) covered by unit test. E2E test. |
 | 2.3 Money Manager CSV import | 1.3, -1.2 | 1 CSV → N tx rows. Idempotent via file_hash. Test on real CSV sample. |
-| 2.4 Bootstrap merchant list from CSV | 2.3 | Merchants populated. Aliases created. Test count vs source. |
+| 2.4 Bootstrap merchant list from CSV | 2.3 | Merchants populated from CSV. Aliases created. **New merchants seen by OCR that don't match the list are pushed to a `/review/new-merchants` queue for manual first-time tagging — no AI categorization.** Test count vs source. |
 | 2.5 Pushover alerts on failure | 2.2, -1.1 | Simulated failure → phone push within 5s. Integration test with mocked API. |
 
 ### Phase 3 — UI (UI agent, parallelizable)
@@ -553,7 +567,7 @@ Test: chunk 1.1 acceptance runs anon-key insert; must fail with `42501`.
 ## Verification (Golden Path)
 
 Before v1 ships:
-1. Cold laptop test: fresh clone → `npm ci` → env → 20 real slips → all appear in dashboard in <3 min
+1. Cold laptop test: fresh clone → `npm ci` → env → 25 real slips (5 per bank) → all appear in dashboard in <3 min
 2. Failure test: bad OpenRouter key → phone push in 30s → exit 2
 3. Load test: dashboard with 5000 tx → first paint <500ms on 4G
 4. Review test: 20 items reviewed on mobile <2 min

@@ -2,6 +2,8 @@
 
 Reviewed monthly. Last reviewed: 2026-07-26.
 
+> **How to update this file:** When a new cost or risk surfaces, add it to the relevant table immediately — don't wait for the monthly review. Update "Last reviewed" date each month even if nothing changed (confirms it was checked). Remove risks that no longer apply.
+
 ## Monthly costs (realistic)
 
 | Cost | Amount | Notes |
@@ -24,7 +26,7 @@ Reviewed monthly. Last reviewed: 2026-07-26.
 
 ## Risks to watch
 
-- **Model deprecation:** Gemini 2.5 could be deprecated. Mitigation: model name is an env var, swap in minutes.
+- **Model deprecation:** Gemini 2.5 Flash Lite/Flash could be deprecated (Google gives 6–12 months notice). Mitigation: `MODEL_PRIMARY` / `MODEL_FALLBACK` env vars — swap model name, no code change needed.
 - **Bank slip privacy:** Slips sent to OpenRouter → Google servers. Google API terms: no training on API data by default.
 - **Supabase backup:** Free tier = 7-day recovery only. Mitigation: nightly pg_dump to R2 (Phase 4).
 - **API key leak:** If pushed to git accidentally, OpenRouter cap limits damage to $10.

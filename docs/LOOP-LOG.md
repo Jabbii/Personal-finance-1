@@ -3,6 +3,8 @@
 Every bug or wrong turn, what caused it, and how it was fixed.
 This stops us from rebuilding from scratch when something breaks.
 
+> **How to update this file:** The moment a bug takes more than one attempt to fix, add an entry. Copy the template below, fill it in, and prepend it above any existing entries (newest first). Never delete old entries — patterns repeat.
+
 ---
 
 _No failures logged yet. First entry goes here when we hit our first bug._
