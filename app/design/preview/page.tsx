@@ -22,25 +22,25 @@ export default function DesignPreviewPage() {
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Colors — light mode</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-bg text-sm text-fg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-bg text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
             bg {tokens.color.bg}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-fg text-sm text-bg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-fg text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
             fg {tokens.color.fg}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-muted text-sm text-fg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-muted text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
             muted {tokens.color.muted}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-accent text-sm text-bg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-accent text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
             accent {tokens.color.accent}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-income text-sm text-bg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-income text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
             income {tokens.color.income}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-expense text-sm text-bg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-expense text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
             expense {tokens.color.expense}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-warning text-sm text-fg shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-warning text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
             warning {tokens.color.warning}
           </div>
         </div>
@@ -49,16 +49,16 @@ export default function DesignPreviewPage() {
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Colors — dark mode</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-bg-dark text-sm text-fg-dark shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-bg-dark text-sm text-fg-dark shadow-card border border-fg/15 dark:border-fg-dark/15">
             bg-dark {tokens.color.dark.bg}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-fg-dark text-sm text-bg-dark shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-fg-dark text-sm text-bg-dark shadow-card border border-fg/15 dark:border-fg-dark/15">
             fg-dark {tokens.color.dark.fg}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-muted-dark text-sm text-fg-dark shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-muted-dark text-sm text-fg-dark shadow-card border border-fg/15 dark:border-fg-dark/15">
             muted-dark {tokens.color.dark.muted}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-accent-dark text-sm text-bg-dark shadow-card">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-accent-dark text-sm text-bg-dark shadow-card border border-fg/15 dark:border-fg-dark/15">
             accent-dark {tokens.color.dark.accent}
           </div>
         </div>
