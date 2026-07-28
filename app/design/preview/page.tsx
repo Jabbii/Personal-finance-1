@@ -34,10 +34,10 @@ export default function DesignPreviewPage() {
           <div className="flex h-20 flex-col items-center justify-center rounded-md bg-accent text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
             accent {tokens.color.accent}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-income text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-income text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
             income {tokens.color.income}
           </div>
-          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-expense text-sm text-bg shadow-card border border-fg/15 dark:border-fg-dark/15">
+          <div className="flex h-20 flex-col items-center justify-center rounded-md bg-expense text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
             expense {tokens.color.expense}
           </div>
           <div className="flex h-20 flex-col items-center justify-center rounded-md bg-warning text-sm text-fg shadow-card border border-fg/15 dark:border-fg-dark/15">
@@ -102,8 +102,8 @@ export default function DesignPreviewPage() {
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Shadows</h2>
         <div className="flex gap-4">
-          <div className="h-16 w-32 rounded-md bg-bg shadow-card" title="card" />
-          <div className="h-16 w-32 rounded-md bg-bg shadow-elevated" title="elevated" />
+          <div className="h-16 w-32 rounded-md bg-bg shadow-card border border-fg/15 dark:border-fg-dark/15" title="card" />
+          <div className="h-16 w-32 rounded-md bg-bg shadow-elevated border border-fg/15 dark:border-fg-dark/15" title="elevated" />
         </div>
       </section>
 

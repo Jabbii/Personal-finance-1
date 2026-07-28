@@ -31,7 +31,11 @@ export const tokens = {
       bg:     '#0D0D12',
       fg:     '#F4F4F6',
       muted:  '#1C1C24',
-      accent: '#6366F1',    // slightly lighter indigo for dark bg contrast
+      // WCAG-checked against dark:text on both bg-dark and fg-dark: 5.13:1
+      // with near-black text (used by the theme toggle). #6366F1 measured
+      // 4.34:1 against either dark-mode text color — just under the 4.5:1
+      // floor for body-sized text (added Chunk 1.2 polish pass).
+      accent: '#7075F5',
     },
   },
 

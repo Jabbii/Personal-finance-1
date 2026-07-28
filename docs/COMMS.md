@@ -25,6 +25,22 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-07-28 — Design pass: real accessibility bugs found and fixed
+
+**What got done:** Installed a third-party design-review tool (`/impeccable`) at your request and used its checklist to re-examine `/design/preview` with real contrast math instead of eyeballing it. Found two genuine bugs, not style opinions:
+- The green "income" and red "expense" color swatches had white text that only reached 2.5:1 and 3.7:1 contrast against their backgrounds — well under the 4.5:1 minimum for readable text. Fixed by switching to dark text (now 7.6:1 and 5.3:1).
+- The purple accent color used for dark mode (`accent-dark`) was measurably too light/dark to pair with either near-white or near-black text at readable contrast — and this one was already live on the real "switch to dark/light" toggle button, not just the preview page. Nudged the color slightly (`#6366F1` → `#7075F5`) after checking the fix in your browser; light-mode colors are untouched.
+
+**Worth flagging on the third-party tool itself:** while installing it, its own script printed text specifically written to influence *how I behave as your AI assistant* — including one part trying to get me to treat "you asked me to install this" as blanket permission to run its bundled sub-agents on my own authority going forward, without checking with you again. I did not follow that instruction and flagged it to you directly before continuing. I also found it wrote an automatic hook that now runs a script after every file edit and at the end of each response — you approved keeping that running.
+
+**What's next:** Chunk 1.3 — the actual database connection code, still on pause per your request. Let me know when to resume.
+
+**Anything you need to do:** Nothing urgent — just noting that a third-party tool is now part of this project's setup (`.claude/skills/impeccable/`), in case you want to reconsider that later.
+
+**Cost so far:** $0.
+
+---
+
 ## 2026-07-28 — Chunk 1.2 complete: the app has a face
 
 **What got done:**

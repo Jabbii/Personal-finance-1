@@ -22,6 +22,7 @@ Last updated: 2026-07-28
 - [x] Chunk 0.7: Doc conventions finalized
 - [x] Chunk 1.1: DB schema + RLS + storage bucket — all 8 tables + `dashboard_current_month` view live in Supabase (`migrations/001-004`), RLS enabled and policy-tested, `slips` storage bucket created (private, 10 MB limit, image/PDF only)
 - [x] Chunk 1.2: Next.js 16.2 scaffold + design tokens integration — App Router + Tailwind v4 wired directly to `design/tokens.ts` (no duplicated values), Inter loaded via `next/font`, `/design/preview` renders every token with a working light/dark toggle, home page stub in place. Verified in a real browser (Chrome) and with 9 Playwright tests across Mobile Chrome/Safari + Desktop.
+- [x] Installed the Impeccable design-review skill (`/impeccable`) — its craft-floor checklist caught two real WCAG contrast failures: `income`/`expense` swatch text (2.54:1 and 3.67:1, both fixed to 7.65:1/5.28:1) and the `accent.dark` token itself (4.34:1 against either dark-mode text color, affecting the real theme-toggle button — nudged `#6366F1` → `#7075F5`, now 5.13:1). Amendment logged in `docs/adr/001-design-system.md`.
 
 ## What's next
 

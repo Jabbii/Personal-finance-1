@@ -33,6 +33,10 @@ The risk of letting Tailwind's 800+ color shades and 12 type sizes loose on this
 | `hero` font size | `32px` | Dashboard total spend. Must be unmissable on first glance. |
 | `touch.minTarget` | `44px` | Apple HIG and Google Material both require this minimum. Non-negotiable. |
 
+## Amendment (2026-07-28)
+
+`accent.dark` changed from `#6366F1` to `#7075F5`. A WCAG contrast check during the Chunk 1.2 design-preview polish pass found the original value measured 4.34:1 against both candidate dark-mode text colors (bg-dark and fg-dark) — just under the 4.5:1 floor for body-sized text, and already affecting the real theme-toggle button. The new value clears 5.13:1 with near-black text. Light-mode `accent` (#4B4EDE) is unchanged.
+
 ## Consequences
 
 - Any component that uses a color, size, or spacing value not in `design/tokens.ts` is a bug
