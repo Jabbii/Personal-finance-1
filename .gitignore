@@ -35,6 +35,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude Code local settings (permissions/hooks personal to this machine)
+.claude/settings.local.json
+
 # test results
 coverage/
 playwright-report/
