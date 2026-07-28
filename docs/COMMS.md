@@ -6,6 +6,25 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-07-28 — Chunk 1.1 complete: database is live
+
+**What got done:**
+- Built the actual database in your Supabase project: 8 tables (accounts, categories, merchants, merchant aliases, raw inputs, transactions, transaction evidence, budgets) plus a fast-loading dashboard summary table.
+- Locked every table down with Row Level Security — only the app itself (using a private key that never leaves the server) can write data. Verified this automatically: tried writing to the database using the public key and confirmed it gets rejected.
+- Created the private `slips` storage folder for bank slip images/PDFs (10 MB per file limit, only image/PDF file types accepted).
+- All of this is saved as 4 numbered `.sql` files in `/migrations` — a permanent record of your database's structure, so it can be rebuilt from scratch if ever needed.
+- Added an automated test (`npm test`) that checks this setup stays correct going forward — 12 tests passing.
+
+**Non-obvious finding:** Your Supabase project uses their newer "publishable/secret key" system rather than the older key format. Functionally identical for our purposes, but it changed one small detail of how a blocked request reports itself (401 vs. 403) — fixed in the test, no action needed from you.
+
+**What's next:** Chunk 1.2 — scaffolding the actual Next.js web app and wiring up the design tokens (colors, spacing, fonts) so pages start rendering.
+
+**Anything you need to do:** Nothing urgent. Whenever you get a chance: export Money Manager as an actual `.csv` (the `.xlsx` file already in the folder works for reference, but Phase 2.3 needs the CSV format), and keep gathering the 25 golden slip photos (5 per bank) for Chunk 1.5.
+
+**Cost so far:** $0. Supabase free tier — nowhere near the 500 MB database / 1 GB storage limits yet.
+
+---
+
 ## 2026-07-26 — Chunk 0.1 complete
 
 **What got done:** Repo initialized, full folder structure created, plan saved to docs/PLAN.md, README written, all doc scaffolding in place. Pushed to GitHub.
