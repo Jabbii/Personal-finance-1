@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+/* Dark mode is opt-in via data-theme="dark" on <html>, not prefers-color-scheme
+   (see docs/adr/001-design-system.md). The design/preview page's toggle button
+   sets/clears this attribute. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

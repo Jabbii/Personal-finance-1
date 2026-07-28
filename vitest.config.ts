@@ -3,7 +3,7 @@ import path from 'path'
 
 export default defineConfig({
   test: {
-    environment: 'node',  // switch to 'jsdom' in 1.2 for component tests
+    environment: 'jsdom',  // switched from 'node' in Chunk 1.2 for component tests
     globals: true,
     include: ['**/*.test.ts', '**/*.test.tsx'],
     exclude: ['node_modules', '.next', 'tests/e2e'],

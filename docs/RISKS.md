@@ -26,6 +26,7 @@ Reviewed monthly. Last reviewed: 2026-07-26.
 
 ## Risks to watch
 
+- **3 "high" npm audit findings, accepted for now (added Chunk 1.2):** `sharp` and `postcss` versions bundled *inside* Next.js 16.2.12 itself (not our own dependency choices) have known CVEs. Both only matter when the tool processes attacker-controlled input — untrusted CSS or untrusted uploaded images from strangers — which doesn't apply here (our CSS is ours; slip images come only from our own bank apps, no public upload form). `npm audit fix --force` would downgrade Next.js to v9.3.3 (a 2020-era release), which is worse than the issue it claims to fix, so left as-is. Mitigation: re-check `npm audit` next time Next.js is upgraded; revisit if the app ever accepts image uploads from anyone other than the user.
 - **Model deprecation:** Gemini 2.5 Flash Lite/Flash could be deprecated (Google gives 6–12 months notice). Mitigation: `MODEL_PRIMARY` / `MODEL_FALLBACK` env vars — swap model name, no code change needed.
 - **Bank slip privacy:** Slips sent to OpenRouter → Google servers. Google API terms: no training on API data by default.
 - **Supabase backup:** Free tier = 7-day recovery only. Mitigation: nightly pg_dump to R2 (Phase 4).

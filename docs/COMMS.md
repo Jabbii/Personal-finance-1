@@ -25,6 +25,26 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-07-28 — Chunk 1.2 complete: the app has a face
+
+**What got done:**
+- The actual Next.js web app now exists and runs (`npm run dev` → localhost:3000).
+- Wired up the color/font/spacing system from Chunk 0.2 for real — every color, font size, and rounded-corner style you'll ever see in this app is pulled from one file (`design/tokens.ts`), not typed out by hand each time.
+- Built `/design/preview` — a page showing every color, text size, spacing gap, corner radius, and shadow the app will ever use, plus a light/dark mode toggle button so you can see both look right.
+- The homepage is a simple placeholder for now (the real dashboard is Phase 3) with a link to the design preview.
+- Checked everything by actually opening it in a browser, not just running tests — and that caught a real bug: the demo boxes for "corner roundness" and "shadows" were invisible because of how I'd wired the sizing rules. Fixed it, verified the fix visually.
+- 9 automated browser tests added (checking the preview page, the toggle, and the homepage link) — run on 3 different simulated devices (an Android phone, an iPhone, and desktop). All passing, alongside the 12 tests from before.
+
+**Non-obvious finding:** `npm install` flagged 3 "high severity" security warnings — but they're both bundled inside Next.js itself (not something we chose), and only matter if the app processes files from strangers on the internet, which ours never will (single user, no public upload form). The suggested "fix" would downgrade Next.js six years. Logged in `docs/RISKS.md`, no action needed from you — just flagging it per our "no hidden costs or risks" rule.
+
+**What's next:** Chunk 1.3 — the actual database connection code (so the app can eventually read/write real data) and the validation rules that check incoming data is shaped correctly.
+
+**Anything you need to do:** Nothing. Same asks as before still stand whenever you get a chance: export Money Manager as `.csv`, keep gathering the 25 golden slip photos.
+
+**Cost so far:** $0.
+
+---
+
 ## 2026-07-26 — Chunk 0.1 complete
 
 **What got done:** Repo initialized, full folder structure created, plan saved to docs/PLAN.md, README written, all doc scaffolding in place. Pushed to GitHub.

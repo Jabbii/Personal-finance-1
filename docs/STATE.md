@@ -21,10 +21,10 @@ Last updated: 2026-07-28
 - [x] PLAN.md v4 → v5 — Next.js 16.2, Qwen dropped, AI categorization dropped, `attrib +P` OneDrive step, `heic-convert` library, 5 banks, 25-slip golden set
 - [x] Chunk 0.7: Doc conventions finalized
 - [x] Chunk 1.1: DB schema + RLS + storage bucket — all 8 tables + `dashboard_current_month` view live in Supabase (`migrations/001-004`), RLS enabled and policy-tested, `slips` storage bucket created (private, 10 MB limit, image/PDF only)
+- [x] Chunk 1.2: Next.js 16.2 scaffold + design tokens integration — App Router + Tailwind v4 wired directly to `design/tokens.ts` (no duplicated values), Inter loaded via `next/font`, `/design/preview` renders every token with a working light/dark toggle, home page stub in place. Verified in a real browser (Chrome) and with 9 Playwright tests across Mobile Chrome/Safari + Desktop.
 
 ## What's next
 
-- [ ] Phase 1.2: Next.js 16.2 scaffold + design tokens integration
 - [ ] Phase 1.3: postgres.js client + Zod schemas
 - [ ] Phase 1.4: OpenRouter wrapper
 - [ ] Phase 1.5: Golden set eval runner
