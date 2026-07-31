@@ -28,6 +28,15 @@ finance-sync/
 *.xls
 *.csv
 
+# golden test slips — real bank slip photos with real names/amounts, kept
+# local only (same "never commit personal data" rule as the exports above)
+fixtures/**/*.jpg
+fixtures/**/*.jpeg
+fixtures/**/*.png
+fixtures/**/*.heic
+fixtures/**/*.HEIC
+fixtures/**/*.pdf
+
 # OS
 .DS_Store
 Thumbs.db
