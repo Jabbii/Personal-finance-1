@@ -6,6 +6,22 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-07-31 — Chunk 1.4 complete: the AI-reading wrapper is built
+
+**What got done:**
+- Built the code that will call the AI model to read your bank slips (`lib/openrouter/client.ts`). This is the one and only place in the whole app that talks to OpenRouter — every future feature that needs AI (reading slips, categorizing, analysis) goes through this one function instead of each writing its own API-calling code.
+- It does three things reliably: asks the model to answer in JSON only, cleans up the response if the model wraps its answer in a markdown code block anyway (a common quirk), and double-checks the shape of what comes back against a strict rulebook before handing it off — so a malformed or unexpected AI response gets caught immediately instead of silently corrupting your data.
+- 11 new automated tests, all using a fake/simulated AI response (no real API calls, no cost) to prove the fence-cleanup, JSON-forcing, and validation logic all work correctly. 40 tests total now passing.
+- Which AI model gets used stays configurable in `.env.local` (`MODEL_PRIMARY`, `MODEL_FALLBACK`, `MODEL_ANALYSIS`) rather than hard-coded — so if Google or Anthropic renames or retires a model later, it's a one-line settings change, not a code change.
+
+**What's next:** Chunk 1.5 — the golden set eval runner (the tool that will grade how accurately the AI reads your 25 real bank slip photos once you've sent them over).
+
+**Anything you need to do:** Still the same two open items whenever you get a chance: export Money Manager as `.csv`, and send over the 25 golden slip photos (5 per bank × 5 banks) — Chunk 1.5 needs those to actually test anything.
+
+**Cost so far:** $0 — this chunk only ran mocked/simulated tests, no real OpenRouter calls yet.
+
+---
+
 ## 2026-07-31 — Chunk 1.3 complete: the app can now talk directly to the database
 
 **What got done:**

@@ -24,10 +24,10 @@ Last updated: 2026-07-31
 - [x] Chunk 1.2: Next.js 16.2 scaffold + design tokens integration — App Router + Tailwind v4 wired directly to `design/tokens.ts` (no duplicated values), Inter loaded via `next/font`, `/design/preview` renders every token with a working light/dark toggle, home page stub in place. Verified in a real browser (Chrome) and with 9 Playwright tests across Mobile Chrome/Safari + Desktop.
 - [x] Installed the Impeccable design-review skill (`/impeccable`) — its craft-floor checklist caught two real WCAG contrast failures: `income`/`expense` swatch text (2.54:1 and 3.67:1, both fixed to 7.65:1/5.28:1) and the `accent.dark` token itself (4.34:1 against either dark-mode text color, affecting the real theme-toggle button — nudged `#6366F1` → `#7075F5`, now 5.13:1). Amendment logged in `docs/adr/001-design-system.md`.
 - [x] Chunk 1.3: postgres.js client + Zod schemas — `lib/db/client.ts` connects to Supabase's Transaction pooler (`prepare: false` for PgBouncer compatibility), verified live with `select 1`. `lib/validators/` has one Zod schema per table (accounts, categories, merchants, merchant_aliases, raw_inputs, transactions, transaction_evidence, budgets). 17 new unit tests passing (29 total). `postgres` package is server-only and ~90 KB uncompressed, well under the 150 KB budget — confirmed with a real `next build`.
+- [x] Chunk 1.4: OpenRouter wrapper — `lib/openrouter/client.ts` (`callModel()`) sends `response_format: json_object` to force JSON, strips a markdown code fence if the model adds one anyway, then validates the parsed JSON against a caller-supplied Zod schema and returns a typed result (throws `OpenRouterError` on any failure: bad JSON, failed validation, non-2xx response, missing API key). Model choice (`MODEL_PRIMARY`/`MODEL_FALLBACK`/`MODEL_ANALYSIS`) stays in `.env.local`, not hard-coded. 11 new unit tests against a mocked `fetch` — no real API key or network call needed (40 total).
 
 ## What's next
 
-- [ ] Phase 1.4: OpenRouter wrapper
 - [ ] Phase 1.5: Golden set eval runner
 
 ## Accounts needed before Phase 1
