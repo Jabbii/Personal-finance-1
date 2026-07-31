@@ -6,6 +6,24 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-07-31 — Chunk 1.3 complete: the app can now talk directly to the database
+
+**What got done:**
+- Wrote the actual code that connects to your database (`lib/db/client.ts`) — verified it works by running a real query against your live Supabase project.
+- Wrote a rulebook for every one of the 8 database tables (`lib/validators/`) that checks incoming data is shaped correctly before it's saved — e.g. a transaction must have a real date, a positive-or-zero amount, and one of `income`/`expense`/`transfer` as its direction, or it gets rejected before it ever touches the database. This is what Phase 2 (reading bank slips and CSVs) will build on.
+- 17 new automated tests added (29 total, all passing) checking both the database connection and every validation rule.
+- Confirmed the new database library adds no weight to the actual web pages your browser downloads — it only runs on the server, never shipped to visitors.
+
+**Non-obvious finding:** hit a real bug while wiring up the database connection — your database password contains an `@` symbol, which happens to be the same character that separates a password from a server address in a connection string. Without encoding it, the connection tried (and failed) to look up a server literally named after a fragment of your password. Fixed by encoding the special characters; no changes needed to the actual password.
+
+**What's next:** Chunk 1.4 — the OpenRouter wrapper (the code that calls the AI model to read bank slips).
+
+**Anything you need to do:** Nothing urgent. Same asks as before still stand whenever you get a chance: export Money Manager as `.csv`, keep gathering the 25 golden slip photos (5 per bank × 5 banks) for Chunk 1.5.
+
+**Cost so far:** $0.
+
+---
+
 ## 2026-07-28 — Chunk 1.1 complete: database is live
 
 **What got done:**
