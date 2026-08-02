@@ -147,7 +147,7 @@ Every rule below is stated as **WHAT** we do, **WHY** it matters to you, and **I
     sync.js                # main ingestion
     re-extract.js          # version-bump re-runner
     check-env.js           # runs on postinstall
-  /fixtures                # golden set: /kbank, /scb, /bbl, /krungthai, /dime, /line
+  /fixtures                # golden set: /kbank, /scb, /bbl, /krungthai, /dime, /line, /7-11, /grab
   /migrations              # Supabase SQL, numbered
   /config
     lifecycle.json         # retention rules
