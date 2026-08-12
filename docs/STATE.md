@@ -1,6 +1,6 @@
 # State of the System
 
-Last updated: 2026-07-31
+Last updated: 2026-08-12
 
 > **How to update this file:** At the end of every chunk, move the finished item from "What's next" to "What exists and works" with a `[x]`. Update "Last updated" date. Keep "Known gaps" current — add gaps as you discover them, remove them when fixed.
 
@@ -25,6 +25,8 @@ Last updated: 2026-07-31
 - [x] Installed the Impeccable design-review skill (`/impeccable`) — its craft-floor checklist caught two real WCAG contrast failures: `income`/`expense` swatch text (2.54:1 and 3.67:1, both fixed to 7.65:1/5.28:1) and the `accent.dark` token itself (4.34:1 against either dark-mode text color, affecting the real theme-toggle button — nudged `#6366F1` → `#7075F5`, now 5.13:1). Amendment logged in `docs/adr/001-design-system.md`.
 - [x] Chunk 1.3: postgres.js client + Zod schemas — `lib/db/client.ts` connects to Supabase's Transaction pooler (`prepare: false` for PgBouncer compatibility), verified live with `select 1`. `lib/validators/` has one Zod schema per table (accounts, categories, merchants, merchant_aliases, raw_inputs, transactions, transaction_evidence, budgets). 17 new unit tests passing (29 total). `postgres` package is server-only and ~90 KB uncompressed, well under the 150 KB budget — confirmed with a real `next build`.
 - [x] Chunk 1.4: OpenRouter wrapper — `lib/openrouter/client.ts` (`callModel()`) sends `response_format: json_object` to force JSON, strips a markdown code fence if the model adds one anyway, then validates the parsed JSON against a caller-supplied Zod schema and returns a typed result (throws `OpenRouterError` on any failure: bad JSON, failed validation, non-2xx response, missing API key). Model choice (`MODEL_PRIMARY`/`MODEL_FALLBACK`/`MODEL_ANALYSIS`) stays in `.env.local`, not hard-coded. 11 new unit tests against a mocked `fetch` — no real API key or network call needed (40 total).
+- [x] Money Manager history exported to CSV — `Money Manager_7-26-26.csv` in the repo root (gitignored, UTF-8 with BOM, 3,251 rows), alongside the original `.xlsx`. Needed for Phase 2.3.
+- [x] Golden set collected and validated (prerequisite for Chunk 1.5) — 36 source files across 7 folders producing 40 ground-truth transaction rows, one `notes.csv` per folder. Two new source folders beyond the 5 banks: `fixtures/7-11/` and `fixtures/grab/`, which are apps with their own in-app payment systems, so no bank slip exists and the e-receipt is the only source document. Validated clean on 2026-08-12: no encoding corruption, all dates `YYYY-MM-DD`, every filename cross-checked against a real file on disk in both directions. Grab's daily-digest PDFs establish the multi-transaction convention — one row per transaction with `filename` repeating, disambiguated by a reference number in `notes`, mirroring how `transaction_evidence` already allows many transactions per `raw_inputs` row.
 
 ## What's next
 
@@ -40,7 +42,8 @@ Last updated: 2026-07-31
 
 ## Known gaps
 
-- Money Manager CSV not yet exported to CSV format (an `.xlsx` export already sits in the repo root, gitignored — needed for Phase 2.3)
-- Golden slip set not yet collected (needed for Chunk 1.5) — gather 5 real slips per bank × 5 banks = 25 total
+- Golden set has **zero `income` examples** — the split is 35 expense / 5 transfer / 0 income. The one row previously tagged `income` (BBL, 2024-11-29, 50,000 THB, memo "Salary") was re-tagged `transfer` on 2026-08-12 after reading the slip image: it is outgoing from the user's own BBL account to their own KBank account, so the memo describes where the funds originated rather than the transaction itself. Consequence: the eval cannot measure income classification at all. Needs a few real salary-arriving slips.
+- Eval runner must **strip the UTF-8 BOM** when parsing `fixtures/*/notes.csv`. The Thai-bearing files are UTF-8 *with* BOM because that is what Excel's "CSV UTF-8" save produces; without stripping, the first header field parses as `﻿filename` and every column lookup fails.
+- `fixtures/line/` is intentionally empty — no LINE OA notification screenshots collected yet. Not a blocker for Chunk 1.5.
 - Push alerts deferred to Phase 4
 - No Supabase Auth user exists yet — the `user_read` RLS policy (logged-in user can read) has nothing to authenticate as yet. Not a blocker: the app reads via a direct Postgres connection (Phase 1.3), which doesn't go through this policy at all. This is pure defense-in-depth for now.
