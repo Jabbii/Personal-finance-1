@@ -1,6 +1,6 @@
 # State of the System
 
-Last updated: 2026-08-12
+Last updated: 2026-08-23
 
 > **How to update this file:** At the end of every chunk, move the finished item from "What's next" to "What exists and works" with a `[x]`. Update "Last updated" date. Keep "Known gaps" current — add gaps as you discover them, remove them when fixed.
 
@@ -28,6 +28,10 @@ Last updated: 2026-08-12
 - [x] Money Manager history exported to CSV — `Money Manager_7-26-26.csv` in the repo root (gitignored, UTF-8 with BOM, 3,251 rows), alongside the original `.xlsx`. Needed for Phase 2.3.
 - [x] Golden set collected and validated (prerequisite for Chunk 1.5) — 36 source files across 7 folders producing 40 ground-truth transaction rows, one `notes.csv` per folder. Two new source folders beyond the 5 banks: `fixtures/7-11/` and `fixtures/grab/`, which are apps with their own in-app payment systems, so no bank slip exists and the e-receipt is the only source document. Validated clean on 2026-08-12: no encoding corruption, all dates `YYYY-MM-DD`, every filename cross-checked against a real file on disk in both directions. Grab's daily-digest PDFs establish the multi-transaction convention — one row per transaction with `filename` repeating, disambiguated by a reference number in `notes`, mirroring how `transaction_evidence` already allows many transactions per `raw_inputs` row.
 
+- [x] `docs/how-it-works.md` written (2026-08-23) — plain-language reference covering the full input→output pipeline, what each vendor actually does (Supabase's three jobs, OpenRouter as a switchboard not an AI), the file journey through OneDrive placeholders, hash-based mapping, the model alternatives we rejected and why, laptop specs, costs, and a glossary. This is the document to re-read after time away from the project.
+- [x] Laptop specs measured (2026-08-23, closing out Chunk -1.4) — ASUS Zenbook UM3402YA, Ryzen 5 7530U (6c/12t), 15.4 GB RAM, **integrated AMD Radeon only, no discrete GPU**, 155 GB free. Running a vision model locally is ruled out: no CUDA, ~1 min/slip on CPU vs ~2 s via API, and 6–10 GB RAM against a ≤500 MB plan budget. Confirms Gemini-via-OpenRouter as the right call.
+- [x] Golden set eval mode decided (2026-08-23) — user approved real API calls against the 36 real slips, with each model response cached to disk so re-runs and CI replay offline for free.
+
 ## What's next
 
 - [ ] Phase 1.5: Golden set eval runner
@@ -45,5 +49,8 @@ Last updated: 2026-08-12
 - Golden set has **zero `income` examples** — the split is 35 expense / 5 transfer / 0 income. The one row previously tagged `income` (BBL, 2024-11-29, 50,000 THB, memo "Salary") was re-tagged `transfer` on 2026-08-12 after reading the slip image: it is outgoing from the user's own BBL account to their own KBank account, so the memo describes where the funds originated rather than the transaction itself. Consequence: the eval cannot measure income classification at all. Needs a few real salary-arriving slips.
 - Eval runner must **strip the UTF-8 BOM** when parsing `fixtures/*/notes.csv`. The Thai-bearing files are UTF-8 *with* BOM because that is what Excel's "CSV UTF-8" save produces; without stripping, the first header field parses as `﻿filename` and every column lookup fails.
 - `fixtures/line/` is intentionally empty — no LINE OA notification screenshots collected yet. Not a blocker for Chunk 1.5.
+- **`.env.local` has an unclosed quote** on `ONEDRIVE_MAKEBYKBANK_PATH` — the value opens with `"` and never closes it, while every other path line is unquoted. Would break the MAKE by KBank folder scan in Chunk 2.1. Not edited yet: it's the credentials file, so the user should make the change (delete the leading `"`).
+- **No cleanup policy for `%USERPROFILE%/finance-sync/converted/`** — PLAN.md calls the HEIC→JPEG and split-PDF outputs "temp files" but never says when they get deleted, so the folder grows without bound. Settle this in Chunk 2.1.
+- **Open question for the user:** whether to drop Supabase Storage entirely and keep slip images only in OneDrive. Would remove the upload step, the image storage cost, and the whole 6/12/18-month lifecycle machinery (including the Cloudflare R2 dependency in Phase 4) — at the cost of not being able to view the original slip from the phone. See `docs/how-it-works.md` §6.
 - Push alerts deferred to Phase 4
 - No Supabase Auth user exists yet — the `user_read` RLS policy (logged-in user can read) has nothing to authenticate as yet. Not a blocker: the app reads via a direct Postgres connection (Phase 1.3), which doesn't go through this policy at all. This is pure defense-in-depth for now.
