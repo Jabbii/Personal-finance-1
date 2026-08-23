@@ -6,6 +6,32 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-08-23 (later) — Grab unblocked, and we tested 5 AI models against each other
+
+**What got done:**
+- Your OpenRouter top-up unblocked the Grab receipts. All 9 Grab transactions now read correctly out of the 5 PDFs, including the ones holding three rides each. **Full report card is now date 100%, amount 100%, direction 85%, merchant 65% across all 40 transactions.**
+- Ran a fair fight between 5 AI models: each one read all 36 slips, three times each, under identical conditions. 534 readings, **89 US cents** total, no failures.
+
+**What we learned:**
+- **Three of the things we measured turned out not to matter.** Every model got the number of transactions per document exactly right, every time — even the tricky Grab digests. Four of five got every date and every amount right. When everyone scores full marks, the test can't tell them apart.
+- **The merchant score is measuring our problem, not theirs.** Every model sits around 50–65%, because they correctly read what's printed on the slip — the legal company name — while your notes record the shop name you actually use. That's the nickname list in Chunk 2.4, not something a better model fixes.
+- **The model we're currently using is the worst of the five.** It's the only one that got dates and amounts wrong, it needed the most retries, it occasionally took 39 seconds to answer, and on one Grab receipt it returned just "GrabFood" and silently threw away the Thai restaurant name. It isn't even the cheapest — it does so much internal "thinking" that it costs more per slip than two faster, more accurate models.
+
+**What needs you — one decision when you're back:**
+
+Which model to switch to. Both of these beat what we're using now:
+
+| Option | Cost per 1,000 slips | Speed | Trade-off |
+|---|---|---|---|
+| **Gemini 3.7 Flash** | $1.60 | 4.8s | Perfect scores on date, amount and direction. The safe pick. |
+| **Gemini 3.5 Flash Lite** | **$1.06** | **2.1s** | Cheapest and fastest, best at Thai text. Slightly worse at telling transfers from expenses — but ordinary code takes that job over in Chunk 2.2 anyway. |
+
+For scale, either one costs roughly 35–55 baht per 1,000 slips. My lean is **Gemini 3.5 Flash Lite**, since the one thing it's weaker at is about to stop being the AI's job.
+
+**What's next:** your model decision, then Chunk 2.1 — reading files out of OneDrive properly.
+
+---
+
 ## 2026-08-23 — Chunk 1.5 complete: the report card works, and it found real bugs
 
 **What got done:**
