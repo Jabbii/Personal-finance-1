@@ -57,3 +57,10 @@ test-results/
 # details (amounts, merchants, the account holder's name) read out of real
 # slips, so they stay local for the same reason fixtures/ images do.
 fixtures/.cache/
+bakeoff/raw/
+
+# bake-off outputs. results.md is aggregate-only and safe to commit; the raw
+# responses, the failure diffs and the run log all reproduce real merchant
+# names and amounts read out of real slips, same reason fixtures/*.csv are out.
+bakeoff/failures.md
+bakeoff/run.log
