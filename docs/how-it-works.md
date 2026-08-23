@@ -164,10 +164,18 @@ garbage. So:
    OneDrive to actually fetch it.
 2. **Fingerprint it.** Compute a SHA-256 hash of the bytes — a 64-character code
    unique to that exact image. See §5; this is the backbone of the whole system.
-3. **Convert only if needed.** HEIC (iPhone format) becomes JPEG. A multi-page
-   PDF like a Grab daily digest is split into one image per page. These land in
-   `%USERPROFILE%/finance-sync/converted/`. A plain JPEG or PNG is read where it
-   sits, with **no copy made**.
+3. **Convert only if needed.** A multi-page PDF like a Grab daily digest is split
+   into one image per page, landing in `%USERPROFILE%/finance-sync/converted/`.
+   A plain JPEG or PNG is read where it sits, with **no copy made** — which,
+   per the scan below, is every image you own.
+
+   > **HEIC conversion was planned and is not needed.** The plan assumed iPhone
+   > HEIC photos and budgeted a `heic-convert` step for them. A scan of all 10
+   > bank folders on 2026-08-23 found **1,956 files and zero HEIC**: 1,219 `.jpg`,
+   > 565 `.jpeg`, 172 `.png`. The user is on Samsung, not iPhone — and more to the
+   > point, these are *screenshots*, and HEIC is a camera format that Android
+   > screenshots never use. Nothing was ever installed, so this is a plan-level
+   > correction only. Decision deferred to Chunk 2.1; see `docs/STATE.md`.
 4. **Read the bytes into memory** and send them to OpenRouter. The file isn't
    "uploaded" anywhere at this point — it's sent as data inside the request.
 5. **Upload the image to Supabase Storage** at `/slips/{YYYY-MM}/{hash}.{ext}`.
