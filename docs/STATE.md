@@ -43,13 +43,12 @@ Last updated: 2026-08-23
   - **Merchant (51.7–65.0%, spreads to ±11.2) measures the aliasing gap, not the models** — they correctly read the printed legal entity. Do not treat this column as model quality.
   - **`flash-lite-25`, the currently configured `MODEL_PRIMARY`, is the weakest tested**: only model under 100% on date (97.5%) and amount (98.3% ±2.5), 7 retries vs 0, p95 39.2 s, and the only one to silently drop a Thai merchant name while still returning a schema-valid string. Not even cheapest — 284,866 reasoning tokens put it above `flash-lite-35` and `flash-lite-31` per receipt.
   - `flash-lite-35` **silently ignored** `reasoning: {effort:'low'}` (0 reasoning tokens), so its figures are a no-reasoning configuration.
+- [x] **`MODEL_PRIMARY` switched to `google/gemini-3.7-flash` (2026-08-23, user decision).** Replaces `google/gemini-2.5-flash-lite`, which the bake-off showed was the weakest of five tested. `google/gemini-2.5-flash` dropped entirely — it tied 3.7 Flash on accuracy at roughly double the cost. Verified live end-to-end after the switch: `npm run eval --source=kbank --limit=2` returned 100% on all four fields. **The Chunk 1.5 baseline figures below were measured on the old model and are now historical** — re-run `npm run eval` to get a current full-set number on 3.7 Flash (36 calls, cache is keyed by model so it will not reuse the old answers).
 
 ## What's next
 
-- [ ] **DECISION WAITING ON USER: which model to set as `MODEL_PRIMARY`.** Current value `google/gemini-2.5-flash-lite` is the weakest of the five tested and should change. Two defensible picks, both recommended over the status quo and over `flash-25` (3× the cost of `flash-lite-35` for identical measured accuracy):
-  - `google/gemini-3.7-flash` — matches the `flash-25` baseline exactly (100/100/100, zero variance) at half its cost, $1.60/1,000 receipts. Safest until the Chunk 2.2 normalizer exists.
-  - `google/gemini-3.5-flash-lite` — cheapest ($1.06/1,000) and fastest (p50 2.1 s), best Thai CER (0.122). Costs ~5.8 pp of direction accuracy, which Chunk 2.2 makes irrelevant.
 - [ ] Phase 2.1: File readability + PDF split + OneDrive pin
+- [ ] **Fallback model tier is unresolved.** `MODEL_FALLBACK` currently points at the same model as `MODEL_PRIMARY`, so a "fallback" is just a retry. Nothing in the bake-off beat 3.7 Flash, so the old "escalate to a more accurate model" tier has no occupant. Decide in Chunk 2.2, when low-confidence retry is actually implemented and we know what triggers it. `google/gemini-3.5-flash` is the untested candidate.
 
 ## Accounts needed before Phase 1
 

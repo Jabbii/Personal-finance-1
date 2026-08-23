@@ -284,8 +284,8 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 | UI | Tailwind + design tokens + shadcn/ui primitives only | No component sprawl |
 | Charts | `uPlot` | Recharts is 200 KB, we render 3 charts |
 | OCR gateway | OpenRouter | One API, model swap without code change |
-| Primary OCR | Gemini 2.5 Flash Lite | $0.10 / $0.40 per M tokens |
-| Fallback OCR | Gemini 2.5 Flash | On low-confidence retry |
+| Primary OCR | **Gemini 3.7 Flash** (`google/gemini-3.7-flash`) | Chosen 2026-08-23 by measured bake-off, not by price list. 100% on date, amount and direction across 36 documents × 3 repeats with zero run-to-run variance, at $1.60/1,000 slips. Replaces Gemini 2.5 Flash Lite, which was the weakest of five tested. See `bakeoff/results.md`. |
+| Fallback OCR | *(unresolved)* — currently the same model, so a retry is just a retry | Nothing tested beats 3.7 Flash, so the old "escalate to a better model" tier has no occupant. Decide in Chunk 2.2, when low-confidence retry is actually implemented and we know what triggers it. |
 | Categorization | ~~Qwen3-VL~~ **CSV bootstrap + manual review queue** | Qwen3-VL turned out more expensive than Gemini; manual first-time tagging is fine at ~150 merchants. |
 | Analysis | Claude Opus 4.7 via OpenRouter | On-demand only, invoked manually |
 | HEIC decoder | `heic-convert` (npm, pure JS) | No native binary, works on Windows out of the box |

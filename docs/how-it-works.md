@@ -134,8 +134,10 @@ a new bill.
 
 ### Gemini — the eyes
 
-`google/gemini-2.5-flash-lite` reads the slips. Fallback is
-`google/gemini-2.5-flash` when the cheap one struggles. `anthropic/claude-opus-4-7`
+`google/gemini-3.7-flash` reads the slips — picked on 2026-08-23 by testing
+five models against your own 36 slips three times each, not by reading a price
+list (see §6). It costs about $1.60 per 1,000 slips, roughly 55 baht.
+`anthropic/claude-opus-4-7`
 is reserved for occasional heavy analysis ("what did I spend on food last month,
 and is that unusual?") and is never called automatically.
 

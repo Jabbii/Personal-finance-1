@@ -102,6 +102,15 @@ Best-practice checklist confirmed by 2026 docs (nothing radical, but a few Windo
 
 ### OpenRouter models — updated pricing (July 2026)
 
+> **SUPERSEDED 2026-08-23.** The model choices below were made from published
+> pricing and general reputation, before any of them had been tested on real
+> slips. A measured bake-off (5 models × 36 documents × 3 repeats, see
+> `bakeoff/results.md`) replaced Gemini 2.5 Flash Lite with **Gemini 3.7 Flash**
+> as primary and dropped Gemini 2.5 Flash. Notably, 2.5 Flash Lite was *not*
+> the cheapest in practice — it spent so many reasoning tokens that it cost
+> more per slip than two faster, more accurate models. **Kept here as a record
+> of the reasoning at the time; do not use this table to pick a model.**
+
 | Model | Role in our app | Input $/M | Output $/M | Notes |
 |---|---|---|---|---|
 | `google/gemini-2.5-flash-lite` | **Primary OCR** | $0.10 | $0.40 | Still the cheapest capable vision model. Handles Thai text. |

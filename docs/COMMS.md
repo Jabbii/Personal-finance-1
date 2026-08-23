@@ -6,6 +6,21 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-08-23 (end of day) — switched to Gemini 3.7 Flash, everything pushed to GitHub
+
+**What got done:**
+- **Switched the AI model to Gemini 3.7 Flash**, your decision from the bake-off. Gemini 2.5 Flash is dropped entirely — it scored identically but cost about double. The model we were actually using, 2.5 Flash Lite, was the weakest of the five tested.
+- Checked it works for real after the switch rather than assuming: two KBank slips read end-to-end, 100% on all four fields.
+- **Pushed everything to GitHub.** Eight commits that existed only on your laptop are now backed up, including all of Phase 1.
+
+**One loose end, deliberately left open.** We used to have a "backup model" the app would retry with if the main one seemed unsure. Nothing we tested is better than 3.7 Flash, so that slot has no sensible occupant. It currently points at 3.7 Flash, meaning a retry is just a retry. That's harmless — the retry feature isn't built yet — and we'll settle it in Chunk 2.2 once we know what "seemed unsure" actually means.
+
+**Worth knowing:** the report card numbers on file (date 100%, amount 100%, direction 85%, merchant 65%) were measured on the *old* model. The bake-off predicts 3.7 Flash does better on direction. Run `npm run eval` next session for a current figure — it costs about 36 calls and won't reuse the old answers.
+
+**What's next:** Chunk 2.1 — reading files out of OneDrive properly.
+
+---
+
 ## 2026-08-23 (later) — Grab unblocked, and we tested 5 AI models against each other
 
 **What got done:**
