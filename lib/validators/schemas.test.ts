@@ -66,21 +66,33 @@ describe('merchantAliasSchema', () => {
 })
 
 describe('rawInputSchema', () => {
-  it('accepts a valid bank slip input and defaults storage_tier to hot', () => {
+  it('accepts a valid bank slip input pointing at its OneDrive original', () => {
     const result = rawInputSchema.parse({
       source: 'bank_slip',
-      file_path: '/slips/2026-07-31-kbank.jpg',
+      file_path: 'C:\\Users\\x\\OneDrive\\Pictures\\K PLUS\\016202144107DPP01788.jpeg',
       file_hash: 'abc123',
       extractor_version: 'v1',
     })
-    expect(result.storage_tier).toBe('hot')
+    expect(result.file_path).toContain('K PLUS')
+  })
+
+  // storage_tier was dropped in migrations/005 (ADR-002). Guard against it
+  // creeping back in — an image copy is exactly what we decided not to keep.
+  it('has no storage_tier field', () => {
+    const result = rawInputSchema.parse({
+      source: 'bank_slip',
+      file_path: 'C:\\slips\\x.jpg',
+      file_hash: 'abc123',
+      extractor_version: 'v1',
+    })
+    expect(result).not.toHaveProperty('storage_tier')
   })
 
   it('rejects an invalid source', () => {
     expect(() =>
       rawInputSchema.parse({
         source: 'fax',
-        file_path: '/slips/x.jpg',
+        file_path: 'C:\\slips\\x.jpg',
         file_hash: 'abc123',
         extractor_version: 'v1',
       })

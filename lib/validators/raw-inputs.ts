@@ -4,12 +4,14 @@
 import { z } from 'zod'
 
 export const RAW_INPUT_SOURCES = ['bank_slip', 'line_screenshot', 'money_manager_csv'] as const
-export const STORAGE_TIERS = ['hot', 'cold', 'deleted'] as const
+
+// `storage_tier` was dropped in migrations/005 — slip images are never
+// uploaded, so there are no tiers to move between. `file_path` points at the
+// original in OneDrive. See docs/adr/002-drop-supabase-storage.md.
 
 export const rawInputSchema = z.object({
   id: z.string().uuid().optional(),
   source: z.enum(RAW_INPUT_SOURCES),
-  storage_tier: z.enum(STORAGE_TIERS).default('hot'),
   file_path: z.string().min(1),
   file_hash: z.string().min(1),
   extractor_version: z.string().min(1),

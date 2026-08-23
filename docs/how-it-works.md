@@ -98,8 +98,12 @@ Supabase does **three** jobs for us, and it helps to keep them separate:
 | Job | What lives there | Why |
 |---|---|---|
 | **Postgres** (database) | The numbers — transactions, merchants, accounts, categories, budgets | This is the actual ledger. All dashboard math runs here. |
-| **Storage** (files) | The slip images themselves | So you can tap a transaction and see the original slip. |
+| ~~**Storage** (files)~~ | ~~Slip images~~ | **Removed 2026-08-23 (ADR-002).** Images stay in OneDrive. |
 | **Auth** (logins) | Almost nothing | There is exactly one user: you. Barely used. |
+
+**Supabase now holds numbers only.** That was a deliberate simplification: you
+said you don't need to see slip pictures on your phone, and that was the only
+thing the cloud copy existed for.
 
 Supabase is just **hosted Postgres with conveniences bolted on**. Postgres is
 the open-source database that has been the boring, correct choice for thirty
@@ -141,7 +145,7 @@ and is that unusual?") and is never called automatically.
 |---|---|
 | **Next.js on Vercel** | The website you look at. Builds pages on the server. |
 | **`postgres.js`** | How the code talks to the database. Chosen for being ~10× smaller than the alternative. |
-| **Cloudflare R2** | Cheap long-term image storage, for slips older than 6 months. Phase 4. |
+| ~~**Cloudflare R2**~~ | Dropped by ADR-002. May reappear in Phase 4 only if database backups don't go to OneDrive. |
 | **Vitest / Playwright** | Automated tests. Nothing ships without them. |
 | **GitHub Actions** | Runs those tests on every change. Broken tests block the change. |
 
@@ -178,20 +182,27 @@ garbage. So:
    > correction only. Decision deferred to Chunk 2.1; see `docs/STATE.md`.
 4. **Read the bytes into memory** and send them to OpenRouter. The file isn't
    "uploaded" anywhere at this point — it's sent as data inside the request.
-5. **Upload the image to Supabase Storage** at `/slips/{YYYY-MM}/{hash}.{ext}`.
-6. **Write the transaction row** to Postgres.
+5. **Write the transaction row** to Postgres. The image itself is **not uploaded
+   anywhere** — it stays in OneDrive, and `raw_inputs.file_path` records where.
+   *(Amended 2026-08-23 — there used to be a step here uploading the image to
+   Supabase Storage. See ADR-002.)*
 
 ### What happens to the files afterward
 
 | File | Fate |
 |---|---|
-| **The original in OneDrive** | **Untouched. Never moved, renamed, or deleted.** Plan rule: OneDrive is user-owned; we scan whatever structure exists and never rearrange it. Optionally `attrib -P` un-pins it afterward, letting OneDrive evict it back to a placeholder later to reclaim disk space. |
-| **Converted temp files** | Live in `finance-sync/converted/`. **Cleanup policy is an open gap** — see `docs/STATE.md`. To be settled in Chunk 2.1. |
-| **The copy in Supabase** | 6 months hot, then 12 months in cheaper Cloudflare storage, then deleted at 18 months. |
-| **The AI's reading of it** | **Kept forever**, in `raw_inputs.ocr_response`. A 3-year-old transaction still shows correct numbers; you just can't see the original picture anymore. |
+| **The original in OneDrive** | **Untouched. Never moved, renamed, or deleted** — and now the only copy that exists. Plan rule: OneDrive is user-owned; we scan whatever structure exists and never rearrange it. Optionally `attrib -P` un-pins it afterward, letting OneDrive evict it back to a placeholder later to reclaim disk space. |
+| **Converted temp files** | Live in `finance-sync/converted/`, only for split PDFs. **Cleanup policy is an open gap** — see `docs/STATE.md`. To be settled in Chunk 2.1. |
+| **The AI's reading of it** | **Kept forever**, in `raw_inputs.ocr_response`. |
 
-At peak, three copies of a slip exist: OneDrive, the temp conversion, and
-Supabase. Two of the three are transient by design.
+**There is no cloud copy of any image.** (ADR-002, 2026-08-23 — the plan
+originally uploaded every slip to Supabase and aged it through Cloudflare over
+18 months.) The durable record of a transaction is the row in Postgres plus the
+model's full reading of the slip, both kept forever. The picture itself lives
+in OneDrive for as long as you keep it there.
+
+**One consequence worth knowing:** if you ever delete slips from OneDrive to
+free space, the numbers survive but the pictures are gone for good.
 
 ---
 
@@ -205,19 +216,17 @@ OneDrive:  .../Pictures/K PLUS/016202144107DPP01788.jpeg
               ├─ SHA-256 ──▶ a3f8b2c9d1e4...
               │
 Postgres:  raw_inputs
-             file_path    = "C:\...\K PLUS\016202144107DPP01788.jpeg"  ← breadcrumb
-             file_hash    = "a3f8b2c9d1e4..."   ← UNIQUE, the real key
-             ocr_response = { the AI's raw answer, kept forever }
-              │
-Storage:   /slips/2026-07/a3f8b2c9d1e4....jpeg   ← the hash IS the filename
-              │
+             file_path    = "C:\...\K PLUS\016202144107DPP01788.jpeg"  ← the only
+             file_hash    = "a3f8b2c9d1e4..."   ← UNIQUE, the real key   pointer
+             ocr_response = { the AI's raw answer, kept forever }        to the
+              │                                                          image
            transaction_evidence  (transaction_id ←→ raw_input_id)
               │
 Postgres:  transactions
              date 2026-07-21, amount 700, merchant NARAPON WONGK
 ```
 
-Four useful things fall out of this design:
+Four things fall out of this design:
 
 - **No duplicates, ever.** `file_hash` is `UNIQUE` in the database. Run the sync
   twice and the second attempt hits that constraint and stops. Same if you
@@ -225,8 +234,10 @@ Four useful things fall out of this design:
 - **Rename-proof.** Filenames collide and change — `Screenshot_20260802_183050.jpg`
   guarantees nothing. Move or rename a file in OneDrive and the hash is
   unchanged, so it isn't reprocessed.
-- **Finding an image needs no lookup.** Because the hash *is* the stored
-  filename, going from a database row to its picture is pure string assembly.
+- **`file_path` is now load-bearing.** It was a breadcrumb next to a cloud copy;
+  since ADR-002 it is the *only* route back to the original image. Renaming a
+  file in OneDrive won't cause reprocessing (the hash is unchanged), but the
+  stored path will be stale and won't open.
 - **One file can hold many transactions.** `transaction_evidence` is
   one-to-many. A Grab daily-digest PDF with five rides produces five transaction
   rows, all pointing back to one source document. (Discovered while building the
@@ -283,17 +294,20 @@ into **per-app folders** — that's why there are 7 paths in `.env.local`. That
 structure tells us which bank a slip came from *before* the AI looks at it.
 There's no cost saving to justify the migration.
 
-### The one simplification actually on the table
+### The simplification we took
 
-**Drop Supabase Storage; keep images only in OneDrive.**
+**Dropped Supabase Storage; images live only in OneDrive.** Decided 2026-08-23
+— the user confirmed they don't need to see slip pictures from the phone, which
+was the only thing the cloud copy served.
 
-- **Gain:** no upload step, no image storage cost, no 6/12/18-month lifecycle
-  machinery, no Cloudflare account needed in Phase 4. Meaningfully less to build.
-- **Lose:** tapping a transaction on your phone couldn't show the original slip
-  — the image would live on the laptop, not the internet.
+- **Gained:** no upload step, no image storage cost, no 6/12/18-month lifecycle
+  machinery, no Cloudflare account, one fewer failure mode in `sync.js`. Also
+  removed the tightest free-tier ceiling in the project.
+- **Lost:** cannot view a slip image from the phone. Open the OneDrive folder on
+  the laptop instead, using `raw_inputs.file_path`.
 
-**Status: open question for the user.** Turns on how much it matters to see the
-slip picture from your phone.
+Full reasoning, including the database-backup consequence it nearly caused, in
+`docs/adr/002-drop-supabase-storage.md`.
 
 ---
 
@@ -330,10 +344,10 @@ script waits on disk and network far more than it computes.
 | Thing | Cost | What happens at the limit |
 |---|---|---|
 | Reading slips (Gemini) | ~$0.0002 per slip | You top up OpenRouter credit. Capped at $10. |
-| Supabase | Free | 500 MB database / 1 GB storage, then writes stop. $25/mo to grow. |
+| Supabase | Free | 500 MB database, then writes stop. $25/mo to grow. Text rows only, so years of headroom. |
 | Vercel | Free | Generous for one user. |
 | GitHub | Free | Public repo. |
-| Cloudflare R2 | Free tier, Phase 4 | Not needed yet. |
+| Slip image storage | **$0** | OneDrive, which you already pay for. (ADR-002 removed the cloud copy and the Cloudflare account with it.) |
 | Pushover (alerts) | $5 one-time | Telegram is a free alternative. |
 
 **Realistic ongoing:** a few dollars a year in AI costs, plus about 4 hours a

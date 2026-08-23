@@ -24,7 +24,7 @@ Processing is on-demand, triggered when the laptop is opened. The app must load 
 4. **Server-render everything.** No client-side data fetching for the dashboard.
 5. **Curated over clever.** ~150 merchants in a lifetime. Curated list beats fuzzy matching.
 6. **Prompt is a contract, not a knowledge base.** Edge cases go into deterministic post-processors.
-7. **Raw preserved, but aged.** Slips move to cold storage or delete after 6 months.
+7. **Raw preserved, but never copied.** The slip stays in OneDrive, untouched. The model's reading of it is kept forever in Postgres. *(Amended 2026-08-23 by ADR-002 — was "slips move to cold storage or delete after 6 months.")*
 8. **Every extraction is versioned.** Old data can be re-extracted on prompt changes.
 9. **Reuse before rebuild.** Audit what exists first. Never build what we can fork.
 10. **Test alongside every change.** No commit without a test. No merge without CI green.
@@ -173,10 +173,9 @@ Every rule below is stated as **WHAT** we do, **WHY** it matters to you, and **I
 
 **OneDrive (user-owned, not enforced):** we scan whatever structure exists. No rearranging user's files.
 
-**Supabase Storage:**
-```
-/slips/{YYYY-MM}/{sha256}.{ext}      # deterministic path, dedup by hash
-```
+**Slip images:** nowhere but OneDrive. `raw_inputs.file_path` records the
+original's location; `raw_inputs.file_hash` (SHA-256) is the dedup key. Removed
+by ADR-002 — was `/slips/{YYYY-MM}/{sha256}.{ext}` in Supabase Storage.
 
 **Naming:** kebab-case for files, snake_case for DB, camelCase for JS variables.
 
@@ -215,13 +214,12 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 
 | Service | Free limit | Impact when exceeded | Mitigation |
 |---|---|---|---|
-| Supabase DB | 500 MB | Writes fail | Archive → R2, retention pruning |
-| Supabase Storage | 1 GB | Uploads fail | Cold-tier migration at 6 months |
+| Supabase DB | 500 MB | Writes fail | Text rows only; years of headroom |
+| ~~Supabase Storage~~ | ~~1 GB~~ | — | **Removed by ADR-002.** This was the tightest limit in the project — ~2,000 slips already on disk would have hit it long before the 500 MB database filled. |
 | Supabase bandwidth | 2 GB/mo | Reads throttled | Cache dashboard SQL; small payloads |
 | Vercel bandwidth | 100 GB/mo | Site 503 | RSC = small payloads; realistically unhittable |
 | Vercel build min | 6000 /mo | Deploys fail | Realistically unhittable for solo |
-| Cloudflare R2 storage | 10 GB free | $0.015/GB after | Retention delete at 18 months |
-| Cloudflare R2 egress | Free (Class A/B ops limited) | Class A: $4.50/M ops | Batch operations |
+| ~~Cloudflare R2~~ | — | — | **No longer needed for images (ADR-002).** May still be revisited in Phase 4 as a `pg_dump` destination if the OneDrive backup proposal is rejected. |
 | OpenRouter | No free tier | Direct spend | Cost cap alert (see below) |
 | GitHub Actions | 2000 min/mo (private) | CI throttled | Nightly job small; use public repo if needed |
 | Pushover | 10,000 msg/mo | $5 for next 10K | Bundle daily digest |
@@ -247,7 +245,8 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 ### Backup risk
 
 - Supabase free tier: **7-day point-in-time recovery only, no exports**
-- Mitigation: nightly `pg_dump` via GitHub Actions cron to R2. Retain 30 days. **Set up in Phase 4, not later.**
+- Mitigation: nightly `pg_dump` via GitHub Actions cron. Retain 30 days. **Set up in Phase 4, not later.**
+- **Raised in severity by ADR-002.** With no cloud image copy, this dump is the only copy of the transaction history and the OCR responses. Destination is now an open Phase 4 decision — a OneDrive folder is proposed, so Microsoft retains it on storage already paid for; R2 remains the fallback.
 
 ### Security risk
 
@@ -281,8 +280,7 @@ Tracked in `docs/RISKS.md`, reviewed monthly.
 | Frontend | **Next.js 16.2** (App Router, RSC-first, `"use cache"` + PPR) | Server components remove client waterfalls; new Cache Components give explicit compiler-managed caching. |
 | DB access | `postgres.js` | ~10× smaller than Supabase JS client |
 | Database | Supabase Postgres | Free tier, hosted, backups |
-| Storage (hot) | Supabase Storage | Slips <6 months |
-| Storage (cold) | Cloudflare R2 | Slips >6 months |
+| Slip images | ~~Supabase Storage~~ / ~~Cloudflare R2~~ **OneDrive only** | Never uploaded. `raw_inputs.file_path` points at the original on disk. See ADR-002. |
 | UI | Tailwind + design tokens + shadcn/ui primitives only | No component sprawl |
 | Charts | `uPlot` | Recharts is 200 KB, we render 3 charts |
 | OCR gateway | OpenRouter | One API, model swap without code change |
@@ -315,12 +313,10 @@ LOCAL LAPTOP                              CLOUD
 │  ├─ normalize           │                          ↑
 │  ├─ save to Postgres    │              ┌────────────────────────┐
 │  ├─ push notify on fail │─writes──────▶│  Supabase Postgres     │
-│  └─ exit non-zero if any│              │  + Storage (hot)       │
+│  └─ exit non-zero if any│              │  (numbers only)        │
 └─────────────────────────┘              └────────────────────────┘
-                                                     ↓ (>6 months, cron)
-                                         ┌────────────────────────┐
-                                         │  Cloudflare R2 (cold)  │
-                                         └────────────────────────┘
+        ▲
+        └── slip images stay here, in OneDrive. Never uploaded. (ADR-002)
 ```
 
 **No queue. No retry backoff. No lease.** Sequential single-pass.
@@ -331,7 +327,7 @@ LOCAL LAPTOP                              CLOUD
 
 ```sql
 raw_inputs (
-  id, source, storage_tier, file_path, file_hash UNIQUE,
+  id, source, file_path, file_hash UNIQUE,   -- storage_tier dropped, ADR-002
   extractor_version, ocr_response JSONB, ingested_at, archived_at
 )
 
@@ -379,15 +375,24 @@ Prompt files versioned: `// version: 2.3`. Change → bump version → run golde
 
 ## Data Lifecycle & Versioning
 
-| Data | Hot | Cold | Delete |
-|---|---|---|---|
-| Slip images | 6 mo (Supabase) | 12 mo (R2) | 18 mo |
-| LINE screenshots | 3 mo | 6 mo | 9 mo |
-| OCR response JSON | Forever | — | never |
-| Transactions | Forever | — | never |
-| `system_errors` | 90 days | — | rolling |
+*Amended 2026-08-23 by ADR-002 — image tiering is gone, because we no longer
+hold a copy of any image to tier.*
 
-**Nightly cron (GitHub Actions):** hot→cold, R2→delete, refresh materialized views, `pg_dump` backup.
+| Data | Where | Retention |
+|---|---|---|
+| Slip images | OneDrive, on the laptop | The user's own files. We never move, rename, or delete them. |
+| LINE screenshots | OneDrive, on the laptop | Same. |
+| OCR response JSON | Supabase Postgres | Forever |
+| Transactions | Supabase Postgres | Forever |
+| `system_errors` | Supabase Postgres | 90 days, rolling |
+
+**Nightly cron (GitHub Actions):** refresh materialized views, `pg_dump` backup. *(File migration steps removed by ADR-002.)*
+
+> **The backup matters more now, not less.** With no cloud image copy, the
+> `pg_dump` is the only copy of the transaction history and the OCR responses.
+> R2 was carrying both jobs; dropping it for images must not silently drop the
+> backup. Phase 4 proposal: dump into a OneDrive folder, so Microsoft retains it
+> using storage already paid for. See ADR-002.
 
 **Re-extraction on version bump:** `re-extract.js` fetches all `raw_inputs` where `extractor_version < current`, runs new extractor, surfaces diffs in `/review/versioning` for user approval.
 
@@ -457,7 +462,7 @@ Each chunk = one Sonnet session, one commit, one PR, one test suite, one plain-l
 | Chunk | Depends on | Acceptance |
 |---|---|---|
 | 4.1 Structured JSON logs + local file | 2.2 | `logs/YYYY-MM-DD.jsonl` written. Log rotation test. |
-| 4.2 Nightly cron: hot→cold + `pg_dump` | 4.1 | Cron runs, moves files, backup lands in R2. Verified restore test. |
+| 4.2 Nightly cron: `pg_dump` backup + view refresh | 4.1 | Cron runs, backup lands and restores cleanly. Decide the backup destination — OneDrive folder proposed in ADR-002. *(File-tiering steps removed by ADR-002.)* |
 | 4.3 Re-extraction + versioning diff UI | 3.3 | Version bump on 10 slips shows diffs. User approves. Test with 2 versions. |
 | 4.4 Weekly digest push | 2.5 | Sunday 9am push: spend, top category, review count. Integration test. |
 | 4.5 Cost cap / kill switch | 2.5 | If daily API spend >$1, script refuses. Test with mocked spend. |
@@ -534,11 +539,8 @@ CREATE POLICY "service_role_all" ON transactions
 CREATE POLICY "user_read" ON transactions
   FOR SELECT USING (auth.uid() IS NOT NULL);
 
--- Storage:
-CREATE POLICY "user_read_storage" ON storage.objects
-  FOR SELECT USING (bucket_id = 'slips' AND auth.uid() IS NOT NULL);
-CREATE POLICY "service_write_storage" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'slips' AND auth.role() = 'service_role');
+-- Storage policies removed by ADR-002 — there is no bucket to protect.
+-- See migrations/005_drop_storage.sql.
 ```
 
 Test: chunk 1.1 acceptance runs anon-key insert; must fail with `42501`.
@@ -572,7 +574,7 @@ Before v1 ships:
 3. Load test: dashboard with 5000 tx → first paint <500ms on 4G
 4. Review test: 20 items reviewed on mobile <2 min
 5. Version bump: change prompt, re-extract 10, diff UI works
-6. Lifecycle test: 7-month-old slip → cron → moved to R2, dashboard OK
+6. Backup test: cron → `pg_dump` lands at its destination → restore into a scratch database succeeds *(replaces the old file-tiering test, removed by ADR-002)*
 7. RLS test: anon key insert → 42501
 8. Habit test: 2-week trial → open rate ≥5 days/week, review queue ≤20
 9. Backup restore test: nightly `pg_dump` restored to fresh DB successfully
