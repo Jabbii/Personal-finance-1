@@ -26,6 +26,13 @@ export interface CallModelOptions<T> {
   userPrompt: string
   systemPrompt?: string
   imageUrl?: string
+  /**
+   * A PDF to read, as a `data:application/pdf;base64,...` URL. OpenRouter takes
+   * these as a `file` content part rather than an `image_url`; Gemini reads
+   * multi-page PDFs directly, which is how one Grab digest yields several
+   * transactions without us splitting pages first.
+   */
+  file?: { filename: string; dataUrl: string }
   apiKey?: string
   fetchImpl?: typeof fetch
 }
@@ -45,6 +52,12 @@ export async function callModel<T>(options: CallModelOptions<T>): Promise<T> {
   const content: Array<Record<string, unknown>> = [{ type: 'text', text: options.userPrompt }]
   if (options.imageUrl) {
     content.push({ type: 'image_url', image_url: { url: options.imageUrl } })
+  }
+  if (options.file) {
+    content.push({
+      type: 'file',
+      file: { filename: options.file.filename, file_data: options.file.dataUrl },
+    })
   }
 
   const messages: Array<Record<string, unknown>> = []

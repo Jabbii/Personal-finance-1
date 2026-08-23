@@ -52,3 +52,8 @@ Thumbs.db
 coverage/
 playwright-report/
 test-results/
+
+# cached model responses from `npm run eval` — these contain real transaction
+# details (amounts, merchants, the account holder's name) read out of real
+# slips, so they stay local for the same reason fixtures/ images do.
+fixtures/.cache/

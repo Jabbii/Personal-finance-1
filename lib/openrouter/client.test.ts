@@ -102,6 +102,44 @@ describe('callModel', () => {
     expect(content).toContainEqual({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,abc123' } })
   })
 
+  // Grab e-receipts arrive as multi-page PDFs. OpenRouter takes these as a
+  // `file` part, not an `image_url` — added in Chunk 1.5.
+  it('includes a file content block when a PDF is passed', async () => {
+    const fetchImpl = mockFetch(
+      chatResponse(JSON.stringify({ merchant: 'x', amount: 1, date: '2026-07-31' }))
+    )
+    await callModel({
+      model: 'google/gemini-2.5-flash-lite',
+      schema: ocrSchema,
+      userPrompt: 'read this receipt',
+      file: { filename: 'receipt.pdf', dataUrl: 'data:application/pdf;base64,cGRm' },
+      apiKey: 'test-key',
+      fetchImpl,
+    })
+    const [, requestInit] = fetchImpl.mock.calls[0]
+    const body = JSON.parse((requestInit as RequestInit).body as string)
+    expect(body.messages[0].content).toContainEqual({
+      type: 'file',
+      file: { filename: 'receipt.pdf', file_data: 'data:application/pdf;base64,cGRm' },
+    })
+  })
+
+  it('sends no attachment block when neither image nor file is given', async () => {
+    const fetchImpl = mockFetch(
+      chatResponse(JSON.stringify({ merchant: 'x', amount: 1, date: '2026-07-31' }))
+    )
+    await callModel({
+      model: 'google/gemini-2.5-flash-lite',
+      schema: ocrSchema,
+      userPrompt: 'no attachment',
+      apiKey: 'test-key',
+      fetchImpl,
+    })
+    const [, requestInit] = fetchImpl.mock.calls[0]
+    const body = JSON.parse((requestInit as RequestInit).body as string)
+    expect(body.messages[0].content).toHaveLength(1)
+  })
+
   it('throws OpenRouterError when the response is not valid JSON', async () => {
     const fetchImpl = mockFetch(chatResponse('not json at all'))
     await expect(

@@ -6,6 +6,43 @@ Plain-language log of what happened each session.
 
 ---
 
+## 2026-08-23 — Chunk 1.5 complete: the report card works, and it found real bugs
+
+**What got done:**
+- Built the report card. `npm run eval` shows each of your 36 slips to the AI, compares its answer to what you wrote by hand, and prints a score for each field — date, amount, merchant, direction — overall and per bank.
+- Wrote the AI's instructions for reading a slip (the "prompt"), now on version 1.3.0. Four rounds of "run it, look at what broke, fix the instructions, run it again."
+- Every AI answer is saved to your laptop, so re-running is instant and free. The save is keyed to the prompt version — change the instructions and it automatically re-asks rather than reusing a stale answer.
+- 51 new automated tests. 91 total, all passing.
+
+**The score, on the 31 slips the AI could read:**
+
+| Field | Correct |
+|---|---|
+| Date | 31/31 — 100% |
+| Amount | 31/31 — 100% |
+| Direction | 25/31 — 81% |
+| Merchant | 24/31 — 77% |
+
+Dates and amounts are perfect, including the tricky ones: PaoTang slips where you pay 98 baht on a 245-baht bill after the 60/40 discount, and Dime slips where a US-dollar share purchase has to come out as baht.
+
+**Four real bugs the report card caught:**
+1. **A wrong answer in your answer key.** Two PaoTang slips from 16 July were recorded against each other's filenames. The AI read both correctly; the answer key was wrong. Verified against the images (the reference numbers prove it) and fixed.
+2. **Dates were coming out three years early.** KBank prints "21 Jul 26" and the AI assumed the Thai calendar and subtracted 543. Fixed.
+3. **Then 7-Eleven broke the fix.** It prints "20/07/69" — the same two digits, but Thai calendar. So there is no single rule; the AI now tries both readings and keeps whichever lands near today.
+4. **"Transfer Completed" was being taken literally.** KBank titles nearly every payment that way, so paying a friend was filed as moving money between your own accounts. Direction is now judged from the two names, never the wording.
+
+**Two things that are NOT AI mistakes, and shouldn't be fixed with better instructions:**
+- **The SCB shop-name problem.** The AI reads "ABUNDANT EMINENT (THAILAND) LIMITED" because that is genuinely what the slip says — the words "Arabica Coffee Roaster" appear nowhere on it. Same for Bangkok Espresso (paid via a personal account, Mr Yutthana Pongsuwan) and Jones Salad (via BEAM CHECKOUT). This is exactly what the merchant nickname list in Chunk 2.4 is for: teach it once, remembered forever.
+- **Direction judgement.** The AI reports the two names correctly every single time — it just reasons about them badly. Ordinary code comparing those names against your own is the right fix, and it belongs in Chunk 2.2. No more prompt tweaking.
+
+**What needs you:**
+1. **Your Grab receipts are stuck.** All 9 Grab transactions failed — OpenRouter requires at least $0.50 of credit before it will accept PDF files, and the balance is below that. Everything else went through because images are billed differently. Top up at openrouter.ai/settings/credits and they'll be read on the next run. That's 9 of your 40 transactions currently unmeasured.
+2. **Two 7-Eleven branch names to confirm.** The AI read "7-Eleven สรรพากรอารีย์" where you wrote "7-Eleven สถานีสรรพากรอารีย์", and "ศูนย์การประชุมแห่ง..." where you wrote "ศูนย์ประชุมแห่ง...". I suspect the AI is right and the notes were shortened — worth a glance.
+
+**What's next:** Chunk 2.1 — reading files out of OneDrive properly (forcing real downloads, splitting PDFs), then 2.2, which turns a read slip into a saved transaction and adds the code that will fix the direction scores.
+
+---
+
 ## 2026-07-31 — Chunk 1.4 complete: the AI-reading wrapper is built
 
 **What got done:**
